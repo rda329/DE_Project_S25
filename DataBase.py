@@ -2,6 +2,10 @@ import os
 from mysql import connector
 from dotenv import load_dotenv
 
+#For db_password its stored in a .env
+#Create a file called .env and create a var DB_PASSWORD = ur local db password
+
+
 class MY_CUSTOM_BOT:
     def __init__(self):
         load_dotenv()
