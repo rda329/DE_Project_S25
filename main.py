@@ -5,28 +5,30 @@ from DataBase import MY_CUSTOM_BOT
 def main():
     bot = MY_CUSTOM_BOT()
 
-    # Insert sample data into search_engines
-    bot.query("INSERT INTO search_engines (name, base_url) VALUES ('Google', 'https://www.google.com')")
+    # Insert a new search query and get the SearchQueryID automatically
+    search_query_id = bot.query("""
+        INSERT INTO SearchQuery (Query, SearchEngine) 
+        VALUES (%s, %s)
+    """, ("Machine learning in finance", "Google"))
 
-    # Fetch inserted search_engine data
-    engines = bot.query("SELECT * FROM search_engines", fetch=True)
-    print("Search Engines:", engines)
+    # Insert a new search URL linked to the above SearchQueryID and get the UrlID automatically
+    url_id = bot.query("""
+        INSERT INTO search_urls (SearchQueryID, Url, Title) 
+        VALUES (%s, %s, %s)
+    """, (search_query_id, "https://example.com", "Machine Learning in Finance"))
 
-    # Insert sample data into search_queries
-    bot.query(f"INSERT INTO search_queries (query, search_engine_id) VALUES ('Python scraping', {engines[0][0]})")
+    # Insert new keywords linked to the above UrlID
+    bot.query("""
+        INSERT INTO KeyWords (UrlID, KeyWordInSearchQuery, Occurrence) 
+        VALUES (%s, %s, %s)
+    """, (url_id, "machine learning", 5))
 
-    # Fetch inserted search_queries data
-    queries = bot.query("SELECT * FROM search_queries", fetch=True)
-    print("Search Queries:", queries)
+    bot.query("""
+        INSERT INTO KeyWords (UrlID, KeyWordInSearchQuery, Occurrence) 
+        VALUES (%s, %s, %s)
+    """, (url_id, "finance", 3))
 
-    # Insert sample data into scraped_queries
-    bot.query(f"INSERT INTO scraped_queries (search_query_id, url, title) VALUES ({queries[0][0]}, 'https://www.example.com', 'Example Title')")
-
-    # Fetch inserted scraped_queries data
-    scraped_results = bot.query("SELECT * FROM scraped_queries", fetch=True)
-    print("Scraped Queries:", scraped_results)
-
-    # Close connection
     bot.close()
+
 
 main()

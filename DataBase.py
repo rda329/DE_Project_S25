@@ -1,15 +1,13 @@
 import os
-from mysql import connector
 from dotenv import load_dotenv
+from mysql import connector
 
-#For db_password its stored in a .env
-#Create a file called .env and create a var DB_PASSWORD = ur local db password
-
+#FOR CODE TO WORK MUST CREATE A .env file in same directory with DB = "password of your local db"
 
 class MY_CUSTOM_BOT:
     def __init__(self):
         load_dotenv()
-        db_password = os.getenv("DB_PASSWORD") #Update password from .env file
+        db_password = os.getenv("DB_PASSWORD")  # Update password from .env file
         try:
             # Establish a persistent database connection
             self.database = connector.connect(
@@ -25,49 +23,60 @@ class MY_CUSTOM_BOT:
 
             # Create necessary tables
             self.cursor.execute("""
-                    CREATE TABLE IF NOT EXISTS search_engines (
-                        id INT AUTO_INCREMENT PRIMARY KEY,
-                        name VARCHAR(255) UNIQUE NOT NULL,
-                        base_url TEXT NOT NULL
-                    )
-                """)
+                CREATE TABLE IF NOT EXISTS SearchQuery (
+                    SearchQueryID INT AUTO_INCREMENT PRIMARY KEY,
+                    Query VARCHAR(255),
+                    SearchEngine VARCHAR(50),
+                    TimeStamp DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
 
             self.cursor.execute("""
-                    CREATE TABLE IF NOT EXISTS search_queries (
-                        id INT AUTO_INCREMENT PRIMARY KEY,
-                        query TEXT NOT NULL,
-                        search_engine_id INT NOT NULL,
-                        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        FOREIGN KEY (search_engine_id) REFERENCES search_engines(id) ON DELETE CASCADE
-                    )
-                """)
+                CREATE TABLE IF NOT EXISTS search_urls (
+                    UrlID INT AUTO_INCREMENT PRIMARY KEY,
+                    SearchQueryID INT,
+                    Url TEXT,
+                    Title VARCHAR(255),
+                    TimeStamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (SearchQueryID) REFERENCES SearchQuery(SearchQueryID) ON DELETE CASCADE
+                )
+            """)
 
             self.cursor.execute("""
-                    CREATE TABLE IF NOT EXISTS scraped_queries (
-                        id INT AUTO_INCREMENT PRIMARY KEY,
-                        search_query_id INT NOT NULL,
-                        url TEXT NOT NULL,
-                        title TEXT,
-                        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        FOREIGN KEY (search_query_id) REFERENCES search_queries(id) ON DELETE CASCADE
-                    )
-                """)
+                CREATE TABLE IF NOT EXISTS KeyWords (
+                    KeyWordID INT AUTO_INCREMENT PRIMARY KEY,
+                    UrlID INT,
+                    KeyWordInSearchQuery VARCHAR(100),
+                    Occurrence INT,
+                    FOREIGN KEY (UrlID) REFERENCES search_urls(UrlID) ON DELETE CASCADE
+                )
+            """)
 
             print("Connected to MySQL and database initialized.")
 
         except connector.Error as e:
             print(f"Database connection error: {e}")
 
-    def query(self, sql_query, fetch=False):
-        """Execute a query, fetch results if needed."""
+    def query(self, sql_query, params=None, fetch=False, auto_commit=True):
+        """Execute a query, fetch results if needed. Handles automatic foreign key assignments."""
         try:
-            self.cursor.execute(sql_query)
+            self.cursor.execute(sql_query, params)  # Use parameters for safety (SQL injection prevention)
+
+            # If it's an INSERT, automatically fetch the last inserted ID for relationships
+            if sql_query.strip().upper().startswith("INSERT") and auto_commit:
+                # Commit the transaction
+                self.database.commit()
+                # Fetch the last inserted ID (for foreign key assignments)
+                self.cursor.execute("SELECT LAST_INSERT_ID()")
+                last_inserted_id = self.cursor.fetchone()[0]
+                return last_inserted_id
 
             # If SELECT, fetch results
             if fetch:
                 return self.cursor.fetchall()
             else:
-                self.database.commit()  # Commit for INSERT, UPDATE, DELETE
+                if auto_commit:
+                    self.database.commit()  # Commit for INSERT, UPDATE, DELETE
 
         except connector.Error as e:
             print(f"Query execution error: {e}")
