@@ -46,11 +46,10 @@ class MY_CUSTOM_BOT:
                 CREATE TABLE IF NOT EXISTS search_urls (
                     UrlID INT AUTO_INCREMENT PRIMARY KEY,
                     SearchQueryID INT,
-                    Url VARCHAR(2083),
+                    Url VARCHAR(2083) UNIQUE,
                     Title VARCHAR(500),
                     TimeStamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY (SearchQueryID) REFERENCES SearchQuery(SearchQueryID) ON DELETE CASCADE,
-                    UNIQUE KEY unique_url (Url(255))
+                    FOREIGN KEY (SearchQueryID) REFERENCES SearchQuery(SearchQueryID) ON DELETE CASCADE
                 )
             """)
 
