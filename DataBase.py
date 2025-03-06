@@ -10,9 +10,6 @@ class MY_CUSTOM_BOT:
         load_dotenv()
         db_password = os.getenv("DB_PASSWORD")
 
-        self.database = None
-        self.cursor = None
-
         try:
             # Establish a persistent database connection
             self.database = connector.connect(
