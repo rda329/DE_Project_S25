@@ -2,6 +2,7 @@ import time
 from datetime import datetime
 from DataBase import MY_CUSTOM_BOT
 
+
 def test_main():
     # Initialize the bot
     print("Initializing MY_CUSTOM_BOT...")
@@ -48,9 +49,11 @@ def test_main():
                 "INSERT INTO search_urls (SearchQueryID, Url, Title) VALUES (%s, %s, %s)",
                 (query_id, urls[0][0], "Duplicate URL Test")
             )
-            print("Warning: Duplicate URL was inserted. Unique constraint may not be working.")
+            print(
+                f"Warning: Duplicate URL was inserted with ID: {duplicate_url_id}. Unique constraint may not be working.")
         except Exception as e:
             print(f"Expected error for duplicate URL: {e}")
+            print("Success: Unique constraint is working properly")
 
         # Test 4: Insert keywords
         print("\nTest 4: Inserting keywords")
@@ -64,22 +67,31 @@ def test_main():
         ]
 
         for url_id, keyword, occurrence in keywords:
-            keyword_id = bot.query(
-                "INSERT INTO KeyWords (UrlID, KeyWordInSearchQuery, Occurrence) VALUES (%s, %s, %s)",
-                (url_id, keyword, occurrence)
-            )
-            print(f"Inserted keyword '{keyword}' with ID: {keyword_id}")
+            try:
+                keyword_id = bot.query(
+                    "INSERT INTO KeyWords (UrlID, KeyWordInSearchQuery, Occurrence) VALUES (%s, %s, %s)",
+                    (url_id, keyword, occurrence)
+                )
+                print(f"Inserted keyword '{keyword}' with ID: {keyword_id}")
+            except Exception as e:
+                print(f"Failed to insert keyword {keyword}: {e}")
 
         # Test 5: Query the data
         print("\nTest 5: Querying the data")
         search_queries = bot.query("SELECT * FROM SearchQuery", fetch=True)
-        print(f"Search Queries: {search_queries}")
+        print("\nSearch Queries:")
+        for query in search_queries:
+            print(f"ID: {query[0]}, Query: {query[1]}, Engine: {query[2]}, Timestamp: {query[7]}")
 
         search_urls = bot.query("SELECT * FROM search_urls", fetch=True)
-        print(f"URLs: {search_urls}")
+        print("\nURLs:")
+        for url in search_urls:
+            print(f"ID: {url[0]}, SearchQueryID: {url[1]}, URL: {url[2]}, Title: {url[3]}")
 
         keywords = bot.query("SELECT * FROM KeyWords", fetch=True)
-        print(f"Keywords: {keywords}")
+        print("\nKeywords:")
+        for kw in keywords:
+            print(f"ID: {kw[0]}, UrlID: {kw[1]}, Keyword: {kw[2]}, Occurrences: {kw[3]}")
 
         # Test 6: Complex join query
         print("\nTest 6: Complex join query")
@@ -93,9 +105,34 @@ def test_main():
         """
 
         results = bot.query(complex_query, fetch=True)
-        print("Results of complex query:")
+        print("\nResults of complex query (keywords with more than 10 occurrences):")
         for row in results:
-            print(f"Query: {row[0]}, URL: {row[1]}, Title: {row[2]}, Keyword: {row[3]}, Occurrences: {row[4]}")
+            print(f"Query: {row[0]}")
+            print(f"URL: {row[1]}")
+            print(f"Title: {row[2]}")
+            print(f"Keyword: {row[3]}")
+            print(f"Occurrences: {row[4]}")
+            print("-" * 50)
+
+        # Test 7: Creating a second search query and testing URL uniqueness across queries
+        print("\nTest 7: Testing URL uniqueness across different search queries")
+        second_query = "python web development"
+        second_query_id = bot.query(
+            "INSERT INTO SearchQuery (Query, SearchEngine, UniqueUrls, Count_Ads, Count_Dups, Count_Promos) VALUES (%s, %s, %s, %s, %s, %s)",
+            (second_query, search_engine, 3, 1, 0, 0)
+        )
+        print(f"Inserted second SearchQuery with ID: {second_query_id}")
+
+        # Try to insert a URL that already exists but with a different search query ID
+        try:
+            bot.query(
+                "INSERT INTO search_urls (SearchQueryID, Url, Title) VALUES (%s, %s, %s)",
+                (second_query_id, urls[0][0], "This URL already exists")
+            )
+            print("Warning: Duplicate URL was inserted with different SearchQueryID. Unique constraint is not global.")
+        except Exception as e:
+            print(f"Expected error for duplicate URL with different SearchQueryID: {e}")
+            print("Success: Unique constraint works across all search queries")
 
     except Exception as e:
         print(f"Test error: {e}")

@@ -10,6 +10,9 @@ class MY_CUSTOM_BOT:
         load_dotenv()
         db_password = os.getenv("DB_PASSWORD")
 
+        self.database = None
+        self.cursor = None
+
         try:
             # Establish a persistent database connection
             self.database = connector.connect(
@@ -22,14 +25,14 @@ class MY_CUSTOM_BOT:
 
             # Create and use the database
             self.cursor.execute(
-                "CREATE DATABASE IF NOT EXISTS MY_CUSTOM_BOT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
+                "CREATE DATABASE IF NOT EXISTS MY_CUSTOM_BOT CHARACTER SET utf8mb4")
             self.cursor.execute("USE MY_CUSTOM_BOT")
 
             # Create necessary tables
             self.cursor.execute("""
                 CREATE TABLE IF NOT EXISTS SearchQuery (
                     SearchQueryID INT AUTO_INCREMENT PRIMARY KEY,
-                    Query VARCHAR(255),
+                    Query TEXT,
                     SearchEngine VARCHAR(50),
                     UniqueUrls INT,
                     Count_Ads INT,
@@ -39,14 +42,16 @@ class MY_CUSTOM_BOT:
                 )
             """)
 
+            # Using MySQL 5.7+ syntax with a proper unique constraint for URLs
             self.cursor.execute("""
                 CREATE TABLE IF NOT EXISTS search_urls (
                     UrlID INT AUTO_INCREMENT PRIMARY KEY,
                     SearchQueryID INT,
-                    Url VARCHAR(2083) UNIQUE,
-                    Title VARCHAR(500),
+                    Url VARCHAR(1024),
+                    Title TEXT,
                     TimeStamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY (SearchQueryID) REFERENCES SearchQuery(SearchQueryID) ON DELETE CASCADE
+                    FOREIGN KEY (SearchQueryID) REFERENCES SearchQuery(SearchQueryID) ON DELETE CASCADE,
+                    CONSTRAINT url_unique UNIQUE (Url(767))
                 )
             """)
 
@@ -54,7 +59,7 @@ class MY_CUSTOM_BOT:
                 CREATE TABLE IF NOT EXISTS KeyWords (
                     KeyWordID INT AUTO_INCREMENT PRIMARY KEY,
                     UrlID INT,
-                    KeyWordInSearchQuery VARCHAR(100),
+                    KeyWordInSearchQuery TEXT,
                     Occurrence INT,
                     FOREIGN KEY (UrlID) REFERENCES search_urls(UrlID) ON DELETE CASCADE
                 )
@@ -64,10 +69,7 @@ class MY_CUSTOM_BOT:
 
         except connector.Error as e:
             print(f"Database connection error: {e}")
-            if self.cursor:
-                self.cursor.close()
-            if self.database and self.database.is_connected():
-                self.database.close()
+            self.close()
             raise
 
     def query(self, sql_query, params=None, fetch=False, auto_commit=True):
@@ -75,20 +77,22 @@ class MY_CUSTOM_BOT:
         try:
             self.cursor.execute(sql_query, params)
 
-            # If it's an INSERT, automatically fetch the last inserted ID for relationships
-            if sql_query.strip().upper().startswith("INSERT") and auto_commit:
-                # Commit the transaction
-                self.database.commit()
-                # Fetch the last inserted ID (for foreign key assignments)
-                last_inserted_id = self.cursor.lastrowid
-                return last_inserted_id
-
-            # If SELECT, fetch results
+            # For SELECT queries, fetch and return results
             if fetch:
                 return self.cursor.fetchall()
-            else:
-                if auto_commit:
-                    self.database.commit()
+
+            # For INSERT queries, get the last inserted ID
+            last_id = None
+            if sql_query.strip().upper().startswith("INSERT"):
+                last_id = self.cursor.lastrowid
+
+            # Commit if auto_commit is True
+            if auto_commit:
+                self.database.commit()
+
+            # Return the last inserted ID for INSERT queries
+            if sql_query.strip().upper().startswith("INSERT"):
+                return last_id
 
         except connector.Error as e:
             if auto_commit:
@@ -96,10 +100,24 @@ class MY_CUSTOM_BOT:
             print(f"Query execution error: {e}")
             raise
 
+    def begin_transaction(self):
+        """Start a transaction"""
+        self.database.start_transaction()
+
+    def commit(self):
+        """Commit the current transaction"""
+        self.database.commit()
+
+    def rollback(self):
+        """Rollback the current transaction"""
+        self.database.rollback()
+
     def close(self):
         """Close the database connection."""
         if self.cursor:
             self.cursor.close()
+            self.cursor = None
         if self.database and self.database.is_connected():
             self.database.close()
+            self.database = None
             print("Database connection closed.")
