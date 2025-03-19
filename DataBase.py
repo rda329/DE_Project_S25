@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from mysql import connector
 
 
+# VARCHAR(MAX) is not allowed in MySql
 # FOR CODE TO WORK MUST CREATE A .env file in same directory with DB_PASSWORD="your_password"
 
 class MY_CUSTOM_BOT:
@@ -32,7 +33,7 @@ class MY_CUSTOM_BOT:
             self.cursor.execute("""
                 CREATE TABLE IF NOT EXISTS SearchQuery (
                     SearchQueryID INT AUTO_INCREMENT PRIMARY KEY,
-                    Query TEXT,
+                    Query VARCHAR(1000), 
                     SearchEngine VARCHAR(50),
                     UniqueUrls INT,
                     Count_Ads INT,
@@ -47,19 +48,19 @@ class MY_CUSTOM_BOT:
                 CREATE TABLE IF NOT EXISTS search_urls (
                     UrlID INT AUTO_INCREMENT PRIMARY KEY,
                     SearchQueryID INT,
-                    Url VARCHAR(1024),
-                    Title TEXT,
+                    Url VARCHAR(1000),
+                    Title VARCHAR(1000),
                     TimeStamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (SearchQueryID) REFERENCES SearchQuery(SearchQueryID) ON DELETE CASCADE,
-                    CONSTRAINT url_unique UNIQUE (Url(767))
+                    CONSTRAINT url_unique UNIQUE (Url(767)) 
                 )
-            """)
+            """) #URL has a unique constraint
 
             self.cursor.execute("""
                 CREATE TABLE IF NOT EXISTS KeyWords (
                     KeyWordID INT AUTO_INCREMENT PRIMARY KEY,
                     UrlID INT,
-                    KeyWordInSearchQuery TEXT,
+                    KeyWordInSearchQuery VARCHAR(1000),
                     Occurrence INT,
                     FOREIGN KEY (UrlID) REFERENCES search_urls(UrlID) ON DELETE CASCADE
                 )
