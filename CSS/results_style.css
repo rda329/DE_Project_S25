@@ -23,24 +23,24 @@ body {
   justify-content: center;       /* Center items horizontally */
   max-width: 1200px;
   margin: 0 auto;
-  padding: 40px 20px;
+  padding: 0px 20px;
 }
 
 /* Logo */
 .header-logo {
   display: flex;
   justify-content: center;       /* Center the logo horizontally */
-  margin-bottom: 20px;           /* Space between logo and search bar */
+  margin-bottom: 10px;           /* Space between logo and search bar */
 }
 
 #results_logo {
-  height: 100px;
+  height: 150px;
   width: auto;
   transition: transform 0.3s ease;
 }
 
 #results_logo:hover {
-  transform: scale(2);
+  transform: scale(1.1);
 }
 
 /* ========== Search Bar ========== */
@@ -102,7 +102,7 @@ body {
 .results-container {
   display: flex;
   max-width: 1200px;
-  margin: 40px auto;
+  margin: 0px auto;
   padding: 0 20px;
   gap: 20px;
   justify-content: flex-start;   /* Align results to the left */
