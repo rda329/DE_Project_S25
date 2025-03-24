@@ -1,51 +1,58 @@
-/* General Styles */
-body {
-  font-family: 'Arial', sans-serif;
+/* ========== General Styles ========== */
+* {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+body {
+  font-family: 'Arial', sans-serif;
   color: #333;
   background-color: #f5f5f5;
   line-height: 1.6;
-  text-align: left; /* Ensure text is left-aligned */
-  height: 100vh; /* Full viewport height */
+  text-align: left;         /* Ensure text is left-aligned */
+  height: 100vh;            /* Full viewport height */
   overflow-y: auto;
 }
 
-/* Header */
+/* ========== Header ========== */
 .header-container {
   display: flex;
-  align-items: left;
-  justify-content: flex-start; /* Align items to the left */
+  flex-direction: column;        /* Stack logo and search bar vertically */
+  align-items: center;           /* Center items vertically */
+  justify-content: center;       /* Center items horizontally */
   max-width: 1200px;
   margin: 0 auto;
-  background-color: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 40px 20px;
 }
 
+/* Logo */
 .header-logo {
   display: flex;
-  align-items: left;
-  margin-right: 0;
+  justify-content: center;       /* Center the logo horizontally */
+  margin-bottom: 20px;           /* Space between logo and search bar */
 }
 
 #results_logo {
-  height: 70px;
+  height: 100px;
   width: auto;
-  margin-right: 20px;
-  margin-left: 0;
   transition: transform 0.3s ease;
 }
 
 #results_logo:hover {
-  transform: scale(1.05);
+  transform: scale(2);
 }
 
+/* ========== Search Bar ========== */
 .header-search {
-  flex-grow: 1;
-  max-width: 800px;
-  margin-left: 0;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  max-width: 800px;              /* Prevent it from stretching too wide */
+  margin: 0 auto;                /* Center the search bar */
 }
 
+/* Search Box */
 .search-box-small {
   display: flex;
   align-items: center;
@@ -53,7 +60,7 @@ body {
   max-width: 600px;
   border: 1px solid #dfe1e5;
   border-radius: 24px;
-  padding: 8px 15px;
+  padding: 10px 15px;
   background-color: #fff;
   transition: box-shadow 0.3s ease, border-color 0.3s ease;
 }
@@ -64,24 +71,17 @@ body {
   border-color: #e24162;
 }
 
+/* Search Input */
 .search-input-small {
   flex-grow: 1;
   border: none;
   outline: none;
-  font-size: 20px;
+  font-size: 18px;
   margin-left: 10px;
   color: #333;
 }
 
-.search-icon {
-  color: #9aa0a6;
-  font-size: 20px;
-}
-
-.search-input-small:focus::placeholder {
-  color: transparent;
-}
-
+/* Clear Search Button */
 .clear-search {
   background: none;
   border: none;
@@ -90,7 +90,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0;
+  padding: 0 10px;
   transition: color 0.3s ease;
 }
 
@@ -98,14 +98,14 @@ body {
   color: #e24162;
 }
 
-/* Results Container */
+/* ========== Results Container ========== */
 .results-container {
   display: flex;
   max-width: 1200px;
-  margin: 20px auto;
+  margin: 40px auto;
   padding: 0 20px;
   gap: 20px;
-  justify-content: flex-start; /* Align results to the left */
+  justify-content: flex-start;   /* Align results to the left */
 }
 
 /* Sidebar */
@@ -117,6 +117,7 @@ body {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Filter and Time Section */
 .filter-section,
 .time-section {
   margin-bottom: 20px;
@@ -124,13 +125,13 @@ body {
 
 .filter-section h3,
 .time-section h3 {
-  margin-top: 0;
-  margin-bottom: 15px;
+  margin: 0 0 15px;
   font-size: 16px;
   color: #e24162;
-  text-align: left; /* Left align the headings */
+  text-align: left;               /* Left align headings */
 }
 
+/* Filter Options */
 .filter-option {
   margin-bottom: 10px;
 }
@@ -146,6 +147,7 @@ body {
   accent-color: #e24162;
 }
 
+/* Time Filter */
 .time-filter {
   width: 100%;
   padding: 8px;
@@ -155,12 +157,13 @@ body {
   font-size: 14px;
 }
 
-/* Search Results */
+/* ========== Search Results ========== */
 .search-results {
   flex-grow: 1;
-  text-align: left; /* Ensure search results are left aligned */
+  text-align: left;               /* Ensure search results are left aligned */
 }
 
+/* Stats */
 .results-stats {
   margin-bottom: 20px;
   color: #666;
@@ -168,6 +171,7 @@ body {
   text-align: left;
 }
 
+/* Individual Result Item */
 .result-item {
   background-color: #fff;
   border-radius: 8px;
@@ -175,7 +179,7 @@ body {
   margin-bottom: 15px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  text-align: left; /* Left align the result item */
+  text-align: left;               /* Left align the result item */
 }
 
 .result-item:hover {
@@ -183,6 +187,7 @@ body {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
+/* Result Title */
 .result-title {
   margin-bottom: 5px;
 }
@@ -200,24 +205,25 @@ body {
   text-decoration: underline;
 }
 
+/* Result URL */
 .result-url {
   color: #0e774a;
   font-size: 14px;
   margin-bottom: 5px;
 }
 
+/* Result Snippet */
 .result-snippet {
   color: #444;
   font-size: 14px;
   line-height: 1.6;
 }
 
-/* Pagination */
+/* ========== Pagination ========== */
 .pagination {
-  margin-top: 30px;
-  margin-bottom: 40px;
+  margin: 30px 0;
   display: flex;
-  justify-content: flex-start; /* Left align pagination */
+  justify-content: flex-start;   /* Left align pagination */
 }
 
 .pagination-controls {
@@ -256,17 +262,18 @@ body {
   color: #e24162;
 }
 
-/* Footer */
+/* ========== Footer ========== */
 footer {
   background-color: #fff;
   padding: 20px;
-  text-align: left; /* Left align footer content */
+  text-align: left;              /* Left align footer content */
   box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Footer Links */
 .footer-links {
   display: flex;
-  justify-content: flex-start; /* Left align footer links */
+  justify-content: flex-start;   /* Left align footer links */
   gap: 20px;
 }
 
@@ -280,35 +287,19 @@ footer {
   color: #e24162;
 }
 
-/* Responsive Design */
+/* ========== Responsive Design ========== */
 @media (max-width: 768px) {
   .header-container {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 10px;
-  }
-
-  .header-search {
-    width: 100%;
-    margin-left: 0;
+      padding: 20px;
   }
 
   .results-container {
-    flex-direction: column;
+      flex-direction: column;
   }
 
   .results-sidebar {
-    width: 100%;
-    margin-bottom: 20px;
-  }
-
-  .filter-section {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-
-  .filter-option {
-    margin-right: 15px;
+      width: 100%;
+      margin-bottom: 20px;
   }
 }
+
