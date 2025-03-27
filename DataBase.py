@@ -24,7 +24,6 @@ class MY_CUSTOM_BOT:
             )
             self.cursor = self.database.cursor()
 
-            # Create and use the database
             self.cursor.execute(
                 "CREATE DATABASE IF NOT EXISTS MY_CUSTOM_BOT CHARACTER SET utf8mb4")
             self.cursor.execute("USE MY_CUSTOM_BOT")
@@ -36,25 +35,22 @@ class MY_CUSTOM_BOT:
                     Query VARCHAR(1000), 
                     SearchEngine VARCHAR(50),
                     UniqueUrls INT,
-                    Count_Ads INT,
                     Count_Dups INT,
-                    Count_Promos INT,
                     TimeStamp DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
             """)
 
-            # Using MySQL 5.7+ syntax with a proper unique constraint for URLs
             self.cursor.execute("""
                 CREATE TABLE IF NOT EXISTS search_urls (
-                    UrlID INT AUTO_INCREMENT PRIMARY KEY,
                     SearchQueryID INT,
                     Url VARCHAR(1000),
+                    Domain VARCHAR (1000),
                     Title VARCHAR(1000),
                     TimeStamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY (SearchQueryID) REFERENCES SearchQuery(SearchQueryID) ON DELETE CASCADE,
-                    CONSTRAINT url_unique UNIQUE (Url(767)) 
+                    PRIMARY KEY (SearchQueryID, Url),
+                    FOREIGN KEY (SearchQueryID) REFERENCES SearchQuery(SearchQueryID) ON DELETE CASCADE
                 )
-            """) #URL has a unique constraint
+            """)
 
             self.cursor.execute("""
                 CREATE TABLE IF NOT EXISTS KeyWords (
@@ -63,6 +59,16 @@ class MY_CUSTOM_BOT:
                     KeyWordInSearchQuery VARCHAR(1000),
                     Occurrence INT,
                     FOREIGN KEY (UrlID) REFERENCES search_urls(UrlID) ON DELETE CASCADE
+                )
+            """)
+
+            self.cursor.execute("""
+                CREATE TABLE IF NOT EXISTS ImageMetaData (
+                    image_id INT AUTO_INCREMENT PRIMARY KEY,
+                    url_id INT NOT NULL,
+                    image_url VARCHAR(1000) NOT NULL,
+                    relevance_score FLOAT COMMENT '0-1 score of how well image matches query',
+                    FOREIGN KEY (url_id) REFERENCES search_urls(UrlID) ON DELETE CASCADE
                 )
             """)
 
