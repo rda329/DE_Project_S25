@@ -46,6 +46,7 @@ class MY_CUSTOM_BOT:
                     Url VARCHAR(1000),
                     Domain VARCHAR (1000),
                     Title VARCHAR(1000),
+                    IsScrappable BOOLEAN DEFAULT FALSE,
                     TimeStamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                     PRIMARY KEY (SearchQueryID, Url),
                     FOREIGN KEY (SearchQueryID) REFERENCES SearchQuery(SearchQueryID) ON DELETE CASCADE

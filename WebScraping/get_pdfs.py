@@ -8,7 +8,7 @@ import os
 
 def get_pdfs(query, engine, page):
     # Create the directory if it doesn't exist
-    save_dir = "ScreenCaptures"
+    save_dir = "WebScraping/ScreenCaptures"
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
 

@@ -5,6 +5,8 @@ import pytesseract
 from pdf2image import convert_from_path
 from collections import defaultdict
 
+#WebScrapping For Bing & Google 
+
 def normalize_url(url):
     # Find the position of the first colon
     first_colon_index = url.find(':')
@@ -36,61 +38,20 @@ def clean_text(text):
     text = re.sub(r'[.,;:!?]\s*$', '', text)  # Remove trailing punctuation
     return text if text else None
 
-def is_ad_url(url):
-    """Check if URL is likely an ad based on common patterns"""
-    # Common ad domains and patterns
-    ad_domains = {
-        'doubleclick.net',
-        'googleadservices.com',
-        'googlesyndication.com',
-        'google-analytics.com',
-        'adservice.google.com',
-        'ads.youtube.com',
-        'bingads.microsoft.com',
-        'yahooads.yahoo.com',
-        'ads.yahoo.com',
-        'ad.doubleclick.net',
-        'adservice.google.*',  # Wildcard for regional variants
-        'amazon-adsystem.com',
-        'facebook.com/ads',
-        'twitter.com/ads',
-        'linkedin.com/ads'
-    }
-    
-    # URL parameters that indicate ads
-    ad_params = {
-        'utm_source=ad',
-        'utm_medium=ad',
-        'utm_campaign=ad',
-        'utm_term=ad',
-        'utm_content=ad',
-        'gclid=',  # Google Ads parameter
-        'msclkid=',  # Microsoft Advertising
-        'fbclid=',  # Facebook Ads
-        'dclid='   # Display & Video 360
-    }
-    
-    # Check against known ad domains
-    domain = urlparse(url).netloc.lower()
-    for ad_domain in ad_domains:
-        if ad_domain.endswith('*'):
-            if domain.startswith(ad_domain[:-1]):
+def is_ad_url(line_number, text_lines):
+    text = text_lines.split("\n")
+    # Extend check to 4 lines before and 1 line after
+    start_line = max(0, line_number - 6)  # Check 6 lines before
+    end_line = min(len(text_lines), line_number + 6)  # And 6 line after
+    for i in range(start_line, end_line+1):
+        line = text[i].lower()
+        # Common Google, Bing ad indicators
+        list_words = line.split(" ")
+        for word in list_words:
+            if word == "sponsored":
                 return True
-        elif domain == ad_domain or domain.endswith('.' + ad_domain):
-            return True
-    
-    # Check for ad parameters in URL
-    lower_url = url.lower()
-    for param in ad_params:
-        if param in lower_url:
-            return True
-    
-    # Check for common ad paths
-    ad_paths = ('/ads/', '/ad/', '/advert/', '/advertising/')
-    path = urlparse(url).path.lower()
-    if any(ad_path in path for ad_path in ad_paths):
-        return True
-    
+                
+
     return False
 
 def extract_search_results(pdf_path, output_json_path=None):
@@ -105,12 +66,12 @@ def extract_search_results(pdf_path, output_json_path=None):
     
     base_url_pattern = re.compile(r'\bhttps?://(?:www\.)?[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+')
     continuation_pattern = re.compile(r'\s*(?:>|»)\s*')
-    search_engine_pattern = re.compile(r'(google|bing|yahoo|duckduckgo)\.', re.IGNORECASE)
+    search_engine_pattern = re.compile(r'(google|bing)\.', re.IGNORECASE)
 
     for img in images:
         text = pytesseract.image_to_string(img)
-        lines = [line.strip() for line in text.splitlines() if line.strip()]
-        
+        lines = text.split("\n")
+
         i = 0
         while i < len(lines):
             line = lines[i]
@@ -136,8 +97,11 @@ def extract_search_results(pdf_path, output_json_path=None):
                 full_url = urlunparse(url_parts)
                 normalized_url = normalize_url(full_url)
                 
+                # Store the line number where the URL was found
+                line_number = i
+                
                 # Check if this is an ad URL
-                if is_ad_url(normalized_url):
+                if is_ad_url(line_number, text):
                     stats['ad_urls_removed'] += 1
                     domain = urlparse(normalized_url).netloc
                     stats['ad_urls_details'][domain] += 1
@@ -166,7 +130,8 @@ def extract_search_results(pdf_path, output_json_path=None):
                         "url": normalized_url,
                         "domain": parsed_url.hostname,
                         "title": title,
-                        "description": description
+                        "description": description,
+                        "line_number": line_number  # Added line number to the result
                     })
             i += 1
 
@@ -189,6 +154,7 @@ def extract_search_results(pdf_path, output_json_path=None):
 #update save results in json struct
 
 # Example usage
-pdf_path = r"C:\Users\rubie\Desktop\DE_Project_S25\ScreenCaptures\duckduckgo_page_1.pdf"
-output_json_path = "search_results.json"  # Output as JSON file
+search_engine = "duckduckgo"
+pdf_path = r"WebScraping\ScreenCaptures\google_page_1.pdf"
+output_json_path = r"WebScraping\ScreenCaptures\search_results.json"  # Output as JSON file
 matches = extract_search_results(pdf_path, output_json_path)

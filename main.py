@@ -6,7 +6,7 @@ from WebScraping.kill_chrome import kill_chrome
 
 
 def main():
-    query = "dog"
+    query = "advertising agencies"
     page = 1
     engines = ["google", "bing", "yahoo", "duckduckgo"]
     for engine in engines:

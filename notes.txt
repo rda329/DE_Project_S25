@@ -1,0 +1,23 @@
+
+#make sure to open local host on sep. browser then chrome
+
+When extracting URLs there is an attempt to remove urls that are ads/sponsored however 
+due to the fact that we cant extract directly from the search engine because there prohibited 
+their terms, to avoid being IP banned, OCR was used to extract url from images sometimes the extraction familiaris
+to extract the indicators of ads. Some ads may pass through without detection.  
+
+***WHERE YOU LEFT OFF***
+0) Improve ad detection
+ - DO SOME IMAGE PROCESSING BEFORE EXTRACTING TEXT
+1) make a seperate url extractor for yahoo + other tasks below
+
+#Add to webscrapping if > 100 results exist in the db only scrape 10 pages randomly from each engine
+#add a scrapping in progress html + css loading page
+
+
+URL UNIQUENESS should be ensured before pushing to DB
+
+
+CHECK each page status before inserting into db
+
+AD check 6 lines before and after , big net may lead to larger false positives
