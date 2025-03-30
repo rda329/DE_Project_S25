@@ -4,7 +4,7 @@ import json
 from urllib.parse import urlparse, urljoin
 import time
 
-def scrape_duckduckgo(query, num_results=30, max_pages=3):
+def scrape_duckduckgo(query, num_results):
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     }
@@ -13,13 +13,13 @@ def scrape_duckduckgo(query, num_results=30, max_pages=3):
     params = {'q': query, 'kl': 'us-en'}
     
     results = []
-    ad_urls = {}
-    excluded_urls = []
+    ad_urls_removed = 0
+    ad_urls_details = {}
     line_counter = 1
     page = 1
     
     try:
-        while len(results) < num_results and page <= max_pages:
+        while len(results) < num_results:
             print(f"Fetching page {page}...")  # Debug
             
             response = requests.get(base_url, headers=headers, params=params)
@@ -34,46 +34,29 @@ def scrape_duckduckgo(query, num_results=30, max_pages=3):
                 print("No results found, ending scrape")
                 break
                 
+            new_results_added = 0
             for result in search_results:
                 if len(results) >= num_results:
                     break
                     
-                # Updated ad detection with proper class
+                # Ad detection
                 is_ad = result.find('span', class_='badge--ad js-badge--ad') is not None
                 
                 title_elem = result.find('a', class_='result__a')
                 if not title_elem:
-                    excluded_urls.append({
-                        'reason': 'missing_title_element',
-                        'line_number': line_counter,
-                        'page_number': page
-                    })
                     line_counter += 1
                     continue
                     
                 url = title_elem.get('href')
                 if not url:
-                    excluded_urls.append({
-                        'reason': 'missing_url',
-                        'line_number': line_counter,
-                        'page_number': page,
-                        'title': title_elem.text.strip() if title_elem.text else None
-                    })
                     line_counter += 1
                     continue
                     
                 domain = urlparse(url).netloc
                 
                 if is_ad:
-                    ad_urls[domain] = ad_urls.get(domain, 0) + 1
-                    excluded_urls.append({
-                        'reason': 'advertisement',
-                        'url': url,
-                        'domain': domain,
-                        'line_number': line_counter,
-                        'page_number': page,
-                        'ad_markup': str(result.find('span', class_='badge--ad js-badge--ad'))  # Store ad markup for verification
-                    })
+                    ad_urls_removed += 1
+                    ad_urls_details[domain] = ad_urls_details.get(domain, 0) + 1
                     line_counter += 1
                     continue
                     
@@ -82,14 +65,6 @@ def scrape_duckduckgo(query, num_results=30, max_pages=3):
                 description = desc_elem.text.strip() if desc_elem else None
                 
                 if any(r['url'] == url for r in results):
-                    excluded_urls.append({
-                        'reason': 'duplicate_url',
-                        'url': url,
-                        'domain': domain,
-                        'title': title,
-                        'line_number': line_counter,
-                        'page_number': page
-                    })
                     line_counter += 1
                     continue
                     
@@ -97,13 +72,15 @@ def scrape_duckduckgo(query, num_results=30, max_pages=3):
                     'url': url,
                     'domain': domain,
                     'title': title,
-                    'description': description,
-                    'line_number': line_counter,
-                    'page_number': page
+                    'description': description
                 })
-                
+                new_results_added += 1
                 line_counter += 1
             
+            if new_results_added == 0 and len(results) < num_results:
+                print("No new results added on this page, ending scrape")
+                break
+                
             # Find the next page button and its parent form
             next_button = soup.find('input', {'type': 'submit', 'class': 'btn btn--alt', 'value': 'Next'})
             if not next_button:
@@ -129,34 +106,27 @@ def scrape_duckduckgo(query, num_results=30, max_pages=3):
     except Exception as e:
         print(f"Error during scraping: {e}")
     
-    # Prepare statistics
+    # Prepare statistics to match the provided structure
     stats = {
         'total_urls_found': line_counter - 1,
-        'ad_urls_removed': sum(ad_urls.values()),
-        'ad_urls_details': ad_urls,
+        'ad_urls_removed': ad_urls_removed,
+        'ad_urls_details': ad_urls_details,
         'final_urls_count': len(results),
-        'pages_scraped': page - 1,
-        'excluded_urls_count': len(excluded_urls)
+        'pages_scraped': page - 1
     }
     
-    # Create the final JSON structure
+    # Create the final JSON structure matching your example
     output = {
         'results': results,
-        'statistics': stats,
-        'excluded_urls': excluded_urls
+        'statistics': stats
     }
     
     return output
 
 if __name__ == "__main__":
-    search_query = "advertising agencies in NYC"
-    data = scrape_duckduckgo(search_query, num_results=60, max_pages=5)
+    search_query = "best smartphones 2025"
+    data = scrape_duckduckgo(search_query, 40)
     
     # Save to JSON file
-    with open('duckduckgo_results_final.json', 'w', encoding='utf-8') as f:
+    with open('duckduckgo_phone_results.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
-    
-    print(f"Results saved to duckduckgo_results_final.json")
-    print(f"Total results: {len(data['results'])}")
-    print(f"Excluded URLs: {len(data['excluded_urls'])}")
-    print(f"Pages scraped: {data['statistics']['pages_scraped']}")

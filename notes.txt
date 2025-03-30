@@ -21,3 +21,7 @@ URL UNIQUENESS should be ensured before pushing to DB
 CHECK each page status before inserting into db
 
 AD check 6 lines before and after , big net may lead to larger false positives
+
+
+
+scrape.py is the file that will scrape all 4 search engines and create the jsons 

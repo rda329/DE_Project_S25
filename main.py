@@ -1,8 +1,8 @@
 import time
 from datetime import datetime
 from DataBase import MY_CUSTOM_BOT
-from WebScraping.get_pdfs import get_pdfs
-from WebScraping.kill_chrome import kill_chrome
+from WebScraping.ExtractURLs.get_pdfs import get_pdfs
+from WebScraping.ExtractURLs.kill_chrome import kill_chrome
 
 
 def main():
