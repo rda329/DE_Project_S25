@@ -122,11 +122,3 @@ def scrape_duckduckgo(query, num_results):
     }
     
     return output
-
-if __name__ == "__main__":
-    search_query = "best smartphones 2025"
-    data = scrape_duckduckgo(search_query, 40)
-    
-    # Save to JSON file
-    with open('duckduckgo_phone_results.json', 'w', encoding='utf-8') as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)

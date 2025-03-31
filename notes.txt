@@ -25,3 +25,17 @@ AD check 6 lines before and after , big net may lead to larger false positives
 
 
 scrape.py is the file that will scrape all 4 search engines and create the jsons 
+
+
+USE my_custom_bot;
+select * from keywords;
+select * from search_urls;
+select * from searchquery;
+
+
+
+MAKE A I icon CSS on hover reveals how many times each key word was seen in this link 
+for results
+
+Even if url already exists in db it can be associated with new keywords without inserting new
+url
