@@ -39,3 +39,60 @@ for results
 
 Even if url already exists in db it can be associated with new keywords without inserting new
 url
+
+****
+
+JSON structure being returned and displayed in front end
+
+[
+  {
+    "url_id": "u123",
+    "url": "https://example.com/ai-trends",
+    "title": "Top AI Trends in 2024",
+    "description": "Explore the latest advancements in AI and machine learning.",
+    "domain": "example.com",
+    "type": "blog",
+    "scrapable": true,
+    "search_engines": ["google", "bing"],
+    "total_occurrences": 42,
+    "text_matches": 35,
+    "image_matches": 7,
+    "keywords": [
+      {
+        "keyword": "AI",
+        "count": 15,
+        "source": "title,body"
+      },
+      {
+        "keyword": "machine learning",
+        "count": 10,
+        "source": "body"
+      }
+    ]
+  },
+  {
+    "url_id": "u456",
+    "url": "https://another.org/data-science",
+    "title": "Data Science 101",
+    "description": "",
+    "domain": "another.org",
+    "type": "tutorial",
+    "scrapable": false,
+    "search_engines": ["google"],
+    "total_occurrences": 18,
+    "text_matches": 18,
+    "image_matches": 0,
+    "keywords": [
+      {
+        "keyword": "Python",
+        "count": 8,
+        "source": "title,code"
+      },
+      {
+        "keyword": "pandas",
+        "count": 5,
+        "source": "body"
+      }
+    ]
+  }
+]

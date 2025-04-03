@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results - Look It Up!</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/results_style.css') }}">
+    <script src="{{ url_for('static', filename='JS/results.js') }}" defer></script>
+</head>
+<body>
+    <div class="background-elements"></div>
+    <!-- Search data container -->
+    <div id="search-data" 
+         data-current-page="{{ current_page|default(1) }}"
+         data-total-pages="{{ total_pages|default(1) }}"
+         data-query="{{ query|default('') }}"
+         data-has-more="{{ current_page < total_pages if results else 'false' }}"
+         style="display: none;">
+    </div>
+    
+    <!-- Header -->
+    <header>
+        <div class="header-container">
+            <div class="header-content">
+                <div class="header-logo">
+                    <a href="{{ url_for('home') }}">
+                        <img src="{{ url_for('static', filename='CSS/Logo.png') }}" alt="Look It Up! Logo" id="results_logo">
+                    </a>
+                </div>
+                
+                <div class="header-search">
+                    <form action="/search" method="get" id="searchForm">
+                        <input type="hidden" name="page" value="1">
+                        <div class="search-box-small">
+                            <div class="search-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                            </div>
+                            <input type="text" class="search-input-small" name="q" id="searchQuery" placeholder="Search the web..." value="{{ query }}" autocomplete="off">
+                            <button type="button" class="clear-search" id="clearSearch">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Results -->
+    <main class="results-container">
+        <div class="search-results">
+            <div class="results-stats">
+                <p>About {{ "{:,}".format(result_count) }} results</p>
+            </div>
+
+            <div id="results-list">
+                {% if results %}
+                    {% for result in results %}
+                    <div class="result-item">
+                        <div class="result-title">
+                            <a href="{{ result.url }}" target="_blank" rel="noopener noreferrer">{{ result.title }}</a>
+                            {% if result.text_matches > 0 %}
+                            <div class="text-match-container">
+                                <div class="result-url" title="Text matches">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e24162" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M2 20h20"></path>
+                                        <path d="M3 10l3-8 3 8"></path>
+                                        <path d="M12 10l3-8 3 8"></path>
+                                        <path d="M6 15h12"></path>
+                                    </svg>
+                                    <span class="frequency-badge">
+                                        {{ result.text_matches }}
+                                    </span>
+                                </div>
+                                <div class="match-popup">
+                                    <div class="match-header">
+                                        <span>Keyword Breakdown</span>
+                                        <span class="total-count">
+                                            {{ result.total_occurrences }} total matches
+                                        </span>
+                                    </div>
+                                    <div class="frequency-list">
+                                        {% for keyword in result.keywords %}
+                                        <div class="frequency-item">
+                                            <span class="word">{{ keyword.keyword }}</span>
+                                            <div class="frequency-bar-container">
+                                                {% if result.total_occurrences > 0 %}
+                                                    <div class="frequency-bar" style="width: {{ (keyword.count / result.total_occurrences * 100)|round(1) }}%"></div>
+                                                {% else %}
+                                                    <div class="frequency-bar" style="width: 0%"></div>
+                                                {% endif %}
+                                                <span class="count">{{ keyword.count }} ({{ keyword.source }})</span>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="result-url">
+                            <span class="url-text">{{ result.url }}</span>
+                            {% if result.domain %}
+                                <span class="domain-tag">{{ result.domain }}</span>
+                            {% endif %}
+                            {% if result.type %}
+                                <span class="type-tag">{{ result.type }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="result-snippet">
+                            {{ result.description }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-results">
+                        <h3>No results found for "{{ query }}"</h3>
+                        <p>Try different keywords or check your spelling</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Load More Button -->
+            {% if current_page < total_pages %}
+            <div class="load-more-container">
+                <button id="loadMoreBtn" class="load-more-btn" aria-label="Load more results">
+                    Load More Results
+                    <span class="loader" hidden></span>
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+
+    <!-- Loading indicator template (hidden by default) -->
+    <template id="result-item-template">
+        <div class="result-item">
+            <div class="result-title">
+                <a href="" target="_blank" rel="noopener noreferrer" class="result-link"></a>
+                <div class="text-match-container" hidden>
+                    <!-- Content will be populated by JavaScript -->
+                </div>
+            </div>
+            <div class="result-url">
+                <span class="url-text"></span>
+            </div>
+            <div class="result-snippet"></div>
+        </div>
+    </template>
+</body>
+</html>

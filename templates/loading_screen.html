@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Scraper | Loading</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/loading_screen.css') }}">
+</head>
+<body>
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-content">
+            <div class="loading-logo">
+                <img src="{{ url_for('static', filename='CSS/Logo.png') }}" alt="Scraper Logo" id="logoImage">
+            </div>
+            <div class="loading-spinner">
+                <div class="spinner-inner"></div>
+            </div>
+            <div class="loading-text">Web Scraping in Progress</div>
+            <input type="hidden" id="queryInput" value="{{ query }}">
+            <input type="hidden" id="currentPageInput" value="{{ current_page }}">
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='JS/loading_screen.js') }}"></script>
+</body>
+</html>

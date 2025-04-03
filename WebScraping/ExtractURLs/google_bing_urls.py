@@ -5,6 +5,7 @@ from urllib.parse import urlparse, urlunparse
 from collections import defaultdict
 from pdf2image import convert_from_path
 import pytesseract
+import platform
 
 def extract_search_results(pdf_path, output_json_path=None):
     """
@@ -19,7 +20,14 @@ def extract_search_results(pdf_path, output_json_path=None):
         Dictionary containing extracted results and statistics
     """
     # Convert PDF to images and process each page
-    images = convert_from_path(pdf_path)
+    if platform.system() == "Darwin":
+        pytesseract.pytesseract.tesseract_cmd = '/opt/homebrew/bin/tesseract'
+        images = convert_from_path(
+            pdf_path,
+            poppler_path="/opt/homebrew/bin"  # ← Your actual path
+        )
+    else:
+        images = convert_from_path(pdf_path)
     new_results = []
     new_stats = {
         'total_urls_found': 0,
